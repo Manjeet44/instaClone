@@ -53,7 +53,22 @@ async function login(input) {
         token: createToken(userFound, process.env.SECRET_KEY, "24h")
     }
 }
+
+async function getUser(id, username) {
+    let user = null;
+    if(id) user = await User.findById(id);
+    if(username) user = await User.findOne({username});
+    if(!user) throw new Error('El usuario no existe');
+    return user;
+}
+
+async function updateAvatar(file) {
+    console.log(file)
+    return null;
+}
     module.exports = {
         register,
-        login
+        login,
+        getUser,
+        updateAvatar
     }
