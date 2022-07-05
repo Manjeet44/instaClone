@@ -1,5 +1,8 @@
+const {ApolloServer} = require('apollo-server-express');
 const mongoose = require('mongoose');
-const {ApolloServer} = require('apollo-server');
+const express = require('express');
+//const {graphqlUploadExpress} = require('graphql-upload');
+const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const typeDefs = require('./gql/schema');
 const resolvers = require('./gql/resolvers');
 require('dotenv').config({path: '.env'});
@@ -16,7 +19,7 @@ mongoose.connect(process.env.BBDD, {
 });
 const { ApolloServerPluginLandingPageGraphQLPlayground } = require('apollo-server-core');
 
-function server() {
+async function server() {
     const serverApollo = new ApolloServer({
         typeDefs,
         resolvers,
@@ -26,7 +29,12 @@ function server() {
             })
         ],
     });
-    serverApollo.listen().then(({url}) => {
-        console.log(`Servidor Listo en: ${url}`)
-    })
+    await serverApollo.start();
+    const app = express();
+    app.use(graphqlUploadExpress());
+    serverApollo.applyMiddleware({app});
+    await new Promise((r) => app.listen({port: process.env.PORT || 4000}, r));
+    console.log('################');
+    console.log(`Server Ready at http://localhost:4000${serverApollo.graphqlPath}`);
+    console.log('################');
 }
